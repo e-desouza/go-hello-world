@@ -2,6 +2,7 @@ pipeline {
     agent {
         label 'master'
     }
+    
     environment {
         user_creds = credentials('dockerhub') // dockerhub is user/pass credential stored as Jenkins cred. Token can be used too
         image = 'eltondesouza/go-hello-world:amd64-latest' // Replace with your [dockerid]/go-hello-world:s390x-latest
