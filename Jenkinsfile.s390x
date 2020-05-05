@@ -39,7 +39,6 @@ pipeline {
                 sh 'export DOCKER_CLI_EXPERIMENTAL=enabled ; sudo -E -n docker manifest push eltondesouza/go-hello-world:latest'
             }
         }
-        
         stage('Deploy Image to OpenShift') {
             agent { label 'master' }
             steps {
