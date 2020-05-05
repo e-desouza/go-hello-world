@@ -28,8 +28,14 @@ pipeline {
         }
         stage('Pushing image') {
             steps {
-                sh 'docker login -u $user_creds_USR -p $user_creds_PSW'
-                sh 'docker push $image'
+                sh 'sudo -n docker login -u $user_creds_USR -p $user_creds_PSW'
+                sh 'sudo -n docker push $image'
+            }
+        }
+        stage('Amending manifest') {
+            steps {
+                sh 'sudo -n docker login -u $user_creds_USR -p $user_creds_PSW'
+                sh 'export DOCKER_CLI_EXPERIMENTAL=enabled ; sudo -E -n docker manifest create eltondesouza/go-hello-world:latest --amend eltondesouza/go-hello-world:amd64-latest --amend eltondesouza/go-hello-world:s390x-latest'
             }
         }
         stage('Deploy Image to OpenShift') {
