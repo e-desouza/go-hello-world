@@ -10,35 +10,35 @@ pipeline {
     stages {
         stage('Pull Source') {
             steps {
-                  sh 'rm -rf go-hello-world'
-                  sh 'git clone $registry'
+                sh 'rm -rf go-hello-world'
+                sh 'git clone $registry'
             }
         }
         stage('Build image') {
             steps {
-                dir('go-hello-world'){
-                  sh 'sudo -n docker build . -t go-hello-world'
+                dir('go-hello-world') {
+                    sh 'sudo -n docker build . -t go-hello-world'
                 }
             }
         }
         stage('Tagging image') {
             steps {
-                  sh 'sudo -n docker tag go-hello-world $image'
+                sh 'sudo -n docker tag go-hello-world $image'
             }
         }
         stage('Pushing image') {
             steps {
-                  sh 'docker login -u $user_creds_USR -p $user_creds_PSW'
-                  sh 'docker push $image'
+                sh 'docker login -u $user_creds_USR -p $user_creds_PSW'
+                sh 'docker push $image'
             }
         }
         stage('Deploy Image to OpenShift') {
             agent { label 'master' }
             steps {
-                  sh 'oc login --token=[replace with token] --server=https://api.atsocpd1.dmz:6443 --insecure-skip-tls-verify'
-                  sh 'oc delete is/go-hello-world || true' // Delete existing stream
-                  sh 'oc delete deploymentconfigs go-hello-world || true' // & deployment config
-                  sh 'oc new-app eltondesouza/go-hello-world' // Push new stream
+                sh 'oc login --token=[replace with token] --server=[replace with OPC server]'
+                sh 'oc delete is/go-hello-world || true' // Delete existing stream
+                sh 'oc delete deploymentconfigs go-hello-world || true' // & deployment config
+                sh 'oc new-app eltondesouza/go-hello-world' // Push new stream
             }
         }
     }

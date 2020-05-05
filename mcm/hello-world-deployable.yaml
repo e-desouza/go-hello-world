@@ -1,0 +1,187 @@
+---
+apiVersion: app.ibm.com/v1alpha1
+kind: Deployable
+metadata:
+  annotations:
+    app.ibm.com/is-local-deployable: "false"
+  name: hello-world-helloworld-sa-deployable
+  namespace: hello-world-source
+  labels:
+    appname: hello-world-demo
+    release: hello-world-demo
+    component: helloworld
+    prereq: "yes"
+spec:
+  template:
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: hello-world-helloworld
+---
+apiVersion: app.ibm.com/v1alpha1
+kind: Deployable
+metadata:
+  annotations:
+    app.ibm.com/is-local-deployable: "false"
+  name: hello-world-helloworld-rbac-deployable
+  namespace: hello-world-source
+  labels:
+    appname: hello-world-demo
+    release: hello-world-demo
+    component: helloworld
+    prereq: "yes"
+spec:
+  template:
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: helloworld-lwdc-query
+    rules:
+      - apiGroups:
+          - ""
+          - apps
+        resources:
+          - clusters
+          - nodes
+          - services
+          - configmaps
+          - pods
+          - endpoints
+          - deployments
+        verbs:
+          - list
+          - get
+---
+apiVersion: app.ibm.com/v1alpha1
+kind: Deployable
+metadata:
+  annotations:
+    app.ibm.com/is-local-deployable: "false"
+  name: hello-world-helloworld-crb-deployable
+  namespace: hello-world-source
+  labels:
+    appname: hello-world-demo
+    release: hello-world-demo
+    component: helloworld
+    prereq: "yes"
+spec:
+  template:
+    kind: ClusterRoleBinding
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: helloworld-lwdc-rolebinding
+      namespace: hello-world
+    subjects:
+      - kind: User
+        name: system:serviceaccount:hello-world:hello-world-helloworld
+        apiGroup: rbac.authorization.k8s.io
+    roleRef:
+      kind: ClusterRole
+      name: helloworld-lwdc-query
+      apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: app.ibm.com/v1alpha1
+kind: Deployable
+metadata:
+  annotations:
+    app.ibm.com/is-local-deployable: "false"
+  name: hello-world-helloworld-svc-deployable
+  namespace: hello-world-source
+  labels:
+    appname: hello-world-demo
+    release: hello-world-demo
+    component: helloworld
+    prereq: "no"
+spec:
+  template:
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: helloworld
+      labels:
+        app.kubernetes.io/name: helloworld
+        app.kubernetes.io/instance: hello-world-demo
+    spec:
+      type: ClusterIP
+      ports:
+        - port: 8080
+          targetPort: http
+          protocol: TCP
+          name: http
+      selector:
+        app.kubernetes.io/name: helloworld
+        app.kubernetes.io/instance: hello-world-demo
+
+---
+apiVersion: app.ibm.com/v1alpha1
+kind: Deployable
+metadata:
+  annotations:
+    app.ibm.com/is-local-deployable: "false"
+  name: hello-world-deploy-deployable
+  namespace: hello-world-source
+  labels:
+    appname: hello-world-demo
+    release: hello-world-demo
+    component: helloworld
+    prereq: "no"
+spec:
+  template:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: hello-world-demo
+      labels:
+        app.kubernetes.io/name: helloworld
+        app.kubernetes.io/instance: hello-world-demo
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: helloworld
+          app.kubernetes.io/instance: hello-world-demo
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: helloworld
+            app.kubernetes.io/instance: hello-world-demo
+        spec:
+          serviceAccountName: hello-world-helloworld
+          containers:
+            - env:
+              name: helloworld
+              image: "docker.io/eltondesouza/go-hello-world:latest"
+              imagePullPolicy: Always
+              ports:
+                - name: http
+                  containerPort: 8080
+                  protocol: TCP
+---
+apiVersion: app.ibm.com/v1alpha1
+kind: Deployable
+metadata:
+  annotations:
+    app.ibm.com/is-local-deployable: "false"
+  name: hello-world-ingress-deployable
+  namespace: hello-world-source
+  labels:
+    appname: hello-world-demo
+    release: hello-world-demo
+    component: hello-world
+    prereq: "no"
+spec:
+  template:
+    apiVersion: route.openshift.io/v1
+    kind: Route
+    metadata:
+      annotations:
+      name: hello-world-route
+      namespace: hello-world
+    spec:
+      port:
+        targetPort: http
+      to:
+        kind: Service
+        name: helloworld
+        weight: 100
+      wildcardPolicy: None
