@@ -7,6 +7,7 @@ pipeline {
         image = 'eltondesouza/go-hello-world:amd64-latest' // Replace with your [dockerid]/go-hello-world:s390x-latest
         registry = 'https://github.com/e-desouza/go-hello-world.git' // Replace with your fork of the hello-world code
     }
+    
     stages {
         stage('Pull Source') {
             steps {
