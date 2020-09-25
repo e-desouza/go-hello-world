@@ -1,6 +1,6 @@
 # STEP 1/2 of multi-stage build: setup the dependencies
 FROM golang:alpine AS builder
-RUN apk update && apk add upx
+RUN apk update
 # Create appuser. Containers with root will not run on OpenShift
 ENV USER=nonrootuser
 ENV UID=10001 
