@@ -25,4 +25,5 @@ WORKDIR /app
 COPY --from=builder /src/hello-world /app/
 # Use an unprivileged user.
 USER nonrootuser:nonrootuser
+EXPOSE 8080
 ENTRYPOINT ./hello-world
