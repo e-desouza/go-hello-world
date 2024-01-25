@@ -14,7 +14,9 @@ RUN adduser \
     --uid "${UID}" \    
     "${USER}"
 ADD . /src
-RUN cd /src && GOOS=linux go build -ldflags="-s -w" -o hello-world
+WORKDIR /src
+RUN go mod init github.com/e-desouza/go-hello-world
+RUN GOOS=linux go build -ldflags="-s -w" -o hello-world
 
 # STEP 2/2 of multi-stage build: build the image. This will be much smaller than just using FROM golang:alpine directly
 FROM alpine
